@@ -53,18 +53,6 @@ class Login : public POSIXApplication
     virtual Result exec();
 
   private:
-
-    /**
-     * Read username from standard input
-     *
-     * @return Username of the user.
-     */
-    const char * getUsername() const;
-
-    /**
-     * Print the login program prompt
-     */
-    void printPrompt() const;
 };
 
 /**

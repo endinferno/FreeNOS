@@ -38,60 +38,8 @@ Login::~Login()
 {
 }
 
-void Login::printPrompt() const
-{
-    struct utsname uts;
-
-    if (uname(&uts) != -1)
-    {
-        printf("\r\n%s %s\r\n\r\nlogin: ",
-            uts.sysname,
-            uts.release
-        );
-    }
-}
-
-const char * Login::getUsername() const
-{
-    static char line[1024];
-    Size total = 0;
-    
-    /* Read a line. */
-    while (total < sizeof(line) - 1)
-    {
-        /* Read a character. */
-        read(0, line + total, 1);
-
-        /* Process character. */
-        switch (line[total])
-        {
-            case '\r':
-            case '\n':
-                printf("\r\n");
-                line[total] = ZERO;
-                return line;
-
-            case '\b':
-                if (total > 0)
-                {
-                    total--;
-                    printf("\b \b");
-                }
-                break;
-        
-            default:
-                printf("%c", line[total]);
-                total++;
-                break;
-        }
-    }
-    line[total] = ZERO;
-    return line;
-}
-
 Login::Result Login::exec()
 {
-    const char *user;
     const char *sh_argv[] = { "/bin/sh", 0 };
     pid_t pid;
     int status;
@@ -123,20 +71,14 @@ Login::Result Login::exec()
     // Loop forever with a login prompt
     while (true)
     {
-        printPrompt();
-        user = getUsername();
-
-        if (strlen(user) > 0)
+        // Start the shell
+        if ((pid = forkexec("/bin/sh", sh_argv)) != (pid_t) -1)
         {
-            // Start the shell
-            if ((pid = forkexec("/bin/sh", sh_argv)) != (pid_t) -1)
-            {
-                waitpid(pid, &status, 0);
-            }
-            else
-            {
-                ERROR("forkexec '" << sh_argv[0] << "' failed: " << strerror(errno));
-            }
+            waitpid(pid, &status, 0);
+        }
+        else
+        {
+            ERROR("forkexec '" << sh_argv[0] << "' failed: " << strerror(errno));
         }
     }
     return Success;

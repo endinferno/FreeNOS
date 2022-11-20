@@ -17,3 +17,4 @@ config.log
 *.tar
 .vagrant
 ChangeLog-*
+tags
